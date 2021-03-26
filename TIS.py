@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-def showImage(Images, width=10, height=10, showGrid=True, HLines=None, VLines=None, w_label_step=0, h_label_step=0,  grid_step=1, title : str = None, colorMap=None, Max=None, Min=None, saveto=None):
+def showImage(Images, width=10, height=10, showGrid=True, HLines=None, VLines=None, w_label_step=0, h_label_step=0,  grid_step=1, titles = None, colorMap=None, Max=None, Min=None, saveto=None):
     """
     Displays an Image (grayscale or RGB)
     
@@ -46,6 +46,8 @@ def showImage(Images, width=10, height=10, showGrid=True, HLines=None, VLines=No
         imagesY = 1
         Images = [Images]
         imagesCount = 1
+        if(not titles is None):
+            titles = [titles]
          
     if(imagesCount == 1):
         height = width/Images[0].shape[1]*Images[0].shape[0]
@@ -96,11 +98,11 @@ def showImage(Images, width=10, height=10, showGrid=True, HLines=None, VLines=No
         im = ax.imshow(Image, cmap= 'gray' if colorMap is None else colorMap, vmin=Min, vmax=Max);
         
         if(Image.ndim == 2):
-            fig.colorbar(im, ax=ax)
-            pass
+            if(not colorMap is None):
+                fig.colorbar(im, ax=ax)
 
-        if(not title is None):
-            ax.set_title(title);
+        if(not titles is None):
+            ax.set_title(titles[i]);
 
         skipI = 0
         while(Image.shape[1] / width / skips[skipI] > maxPixelsPerWidthUnitMajor / np.max([imagesX, imagesY])):
