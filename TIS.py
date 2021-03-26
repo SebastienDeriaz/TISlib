@@ -17,7 +17,10 @@ def showImage(Images, width=10, height=10, showGrid=True, HLines=None, VLines=No
     h_label_step : height label step
     grid_step    : grid step
     titles       : figure titles (default none)
-    colorMap     : colormap to apply (default gray when grey scale, ignored when RGB), default True
+    colorMap     : colormap to apply (default gray when grey scale, ignored when RGB)
+        * False  : no colorbar
+        * True   : auto colorbar
+        "..."    : custom color bar
     Max          : pixel max (default to 255 or 1 depending of data)
     Min          : pixel min (default 0)
     saveto       : path to save figure
@@ -106,7 +109,9 @@ def showImage(Images, width=10, height=10, showGrid=True, HLines=None, VLines=No
             else:
                 im = ax.imshow(Image, cmap= colorMap, vmin=Min, vmax=Max);
                 fig.colorbar(im, ax=ax)
-
+        else:
+            im = ax.imshow(Image, vmin=Min, vmax=Max);
+            
         if(not titles is None):
             ax.set_title(titles[i]);
 
