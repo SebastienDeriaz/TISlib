@@ -103,7 +103,7 @@ def showImage(Images, width=10, height=10, showGrid=True, HLines=None, VLines=No
             ax.set_title(title);
 
         skipI = 0
-        while(Image.shape[1] / width / skips[skipI] > maxPixelsPerWidthUnitMajor):
+        while(Image.shape[1] / width / skips[skipI] > maxPixelsPerWidthUnitMajor / np.max([imagesX, imagesY])):
             skipI += 1
         if(w_label_step > 0):
             ax.set_xticks(np.arange(0, Image.shape[1], w_label_step));
