@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-def showImage(Images, width=10, height=10, showGrid=True, HLines=None, VLines=None, w_label_step=0, h_label_step=0,  grid_step=1, titles = None, colorMap=True, Max=None, Min=None, saveto=None):
+def showImage(Images, width=10, height=10, showGrid=True, HLines=None, VLines=None, w_label_step=0, h_label_step=0,  grid_step=1, titles = None, colorMap=None, Max=None, Min=None, saveto=None, colorBar=True):
     """
     Displays an Image (grayscale or RGB)
     
@@ -17,10 +17,8 @@ def showImage(Images, width=10, height=10, showGrid=True, HLines=None, VLines=No
     h_label_step : height label step
     grid_step    : grid step
     titles       : figure titles (default none)
-    colorMap     : colormap to apply (default gray when grey scale, ignored when RGB)
-        * False  : no colorbar
-        * True   : auto colorbar
-        "..."    : custom color bar
+    colorMap     : colormap to apply (default gray when grey scale, ignored when RGB), default None
+    colorBar     : Add color bar (default True)
     Max          : pixel max (default to 255 or 1 depending of data)
     Min          : pixel min (default 0)
     saveto       : path to save figure
@@ -49,7 +47,7 @@ def showImage(Images, width=10, height=10, showGrid=True, HLines=None, VLines=No
         imagesY = 1
         Images = [Images]
         imagesCount = 1
-        if(type(colorMap) == str):
+        if(not colorMap is None):
             colorMap = [colorMap]
         if(not titles is None):
             titles = [titles]
@@ -103,14 +101,12 @@ def showImage(Images, width=10, height=10, showGrid=True, HLines=None, VLines=No
         
         
         if(Image.ndim == 2):
-            if(colorMap == True):
-                im = ax.imshow(Image, cmap= 'gray', vmin=Min, vmax=Max);
-                fig.colorbar(im, ax=ax)
-            elif(colorMap == False):
-                im = ax.imshow(Image, cmap= 'gray', vmin=Min, vmax=Max);
-            else:
-                print(colorMap[i])
+            if(not colorMap is None):
                 im = ax.imshow(Image, cmap= colorMap[i], vmin=Min, vmax=Max);
+            else:
+                im = ax.imshow(Image, cmap= 'gray', vmin=Min, vmax=Max);
+            
+            if(colorBar):
                 fig.colorbar(im, ax=ax)
         else:
             im = ax.imshow(Image, vmin=Min, vmax=Max);
