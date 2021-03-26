@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-def showImage(Images, width=10, height=10, showGrid=True, HLines=None, VLines=None, w_label_step=0, h_label_step=0,  grid_step=1, titles = None, colorMap=None, Max=None, Min=None, saveto=None):
+def showImage(Images, width=10, height=10, showGrid=True, HLines=None, VLines=None, w_label_step=0, h_label_step=0,  grid_step=1, titles = None, colorMap=True, Max=None, Min=None, saveto=None):
     """
     Displays an Image (grayscale or RGB)
     
@@ -16,8 +16,8 @@ def showImage(Images, width=10, height=10, showGrid=True, HLines=None, VLines=No
     w_label_step : width labels step
     h_label_step : height label step
     grid_step    : grid step
-    title        : figure title (default none)
-    colorMap     : colormap to apply (default gray when grey scale, ignored when RGB)
+    titles       : figure titles (default none)
+    colorMap     : colormap to apply (default gray when grey scale, ignored when RGB), default True
     Max          : pixel max (default to 255 or 1 depending of data)
     Min          : pixel min (default 0)
     saveto       : path to save figure
@@ -95,10 +95,16 @@ def showImage(Images, width=10, height=10, showGrid=True, HLines=None, VLines=No
         ax.set_xlabel("%d pixels" % Image.shape[1]);
         ax.set_ylabel("%d pixels" % Image.shape[0]);
 
-        im = ax.imshow(Image, cmap= 'gray' if colorMap is None else colorMap, vmin=Min, vmax=Max);
+        
         
         if(Image.ndim == 2):
-            if(not colorMap is None):
+            if(colorMap == True):
+                im = ax.imshow(Image, cmap= 'gray', vmin=Min, vmax=Max);
+                fig.colorbar(im, ax=ax)
+            elif(colorMap == False):
+                im = ax.imshow(Image, cmap= 'gray', vmin=Min, vmax=Max);
+            else:
+                im = ax.imshow(Image, cmap= colorMap, vmin=Min, vmax=Max);
                 fig.colorbar(im, ax=ax)
 
         if(not titles is None):
