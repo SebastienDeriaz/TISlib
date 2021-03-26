@@ -49,6 +49,8 @@ def showImage(Images, width=10, height=10, showGrid=True, HLines=None, VLines=No
         imagesY = 1
         Images = [Images]
         imagesCount = 1
+        if(type(colorMap) == str):
+            colorMap = [colorMap]
         if(not titles is None):
             titles = [titles]
          
@@ -82,8 +84,8 @@ def showImage(Images, width=10, height=10, showGrid=True, HLines=None, VLines=No
             defaultMax = info.max
             defaultMin = info.min
         else:
-            defaultMax = np.min(Image)
-            defaultMin = np.max(Image)
+            defaultMin = np.min(Image)
+            defaultMax = np.max(Image)
 
 
         Max = defaultMax if Max is None else Max
@@ -107,7 +109,8 @@ def showImage(Images, width=10, height=10, showGrid=True, HLines=None, VLines=No
             elif(colorMap == False):
                 im = ax.imshow(Image, cmap= 'gray', vmin=Min, vmax=Max);
             else:
-                im = ax.imshow(Image, cmap= colorMap, vmin=Min, vmax=Max);
+                print(colorMap[i])
+                im = ax.imshow(Image, cmap= colorMap[i], vmin=Min, vmax=Max);
                 fig.colorbar(im, ax=ax)
         else:
             im = ax.imshow(Image, vmin=Min, vmax=Max);
@@ -132,7 +135,7 @@ def showImage(Images, width=10, height=10, showGrid=True, HLines=None, VLines=No
             ax.set_yticks(np.arange(0, Image.shape[0], skips[skipI]));
             ax.set_yticklabels(np.arange(0, Image.shape[0], skips[skipI]));
 
-        if(showGrid and (Image.shape[0] / height <= maxPixelsPerWidthUnitMinor or  grid_step > 1)):
+        if(showGrid and (Image.shape[0] / height <= maxPixelsPerWidthUnitMinor / np.max([imagesX, imagesY]) or  grid_step > 1)):
             ax.set_xticks(np.arange(-0.5, Image.shape[1]+0.5,  grid_step), minor=True);
             ax.set_yticks(np.arange(-0.5, Image.shape[0]+0.5,  grid_step), minor=True);
             ax.grid(which='minor', color='w', linestyle='-', linewidth=0.5);
