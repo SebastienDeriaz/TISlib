@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-def showImage(Images, width=10, height=10, showGrid=True, HLines=None, VLines=None, w_label_step=0, h_label_step=0,  grid_step=1, titles = None, colorMap=None, Max=None, Min=None, saveto=None, colorBar=True):
+def showImage(Images, width=10, height=10, showGrid=True, HLines=None, VLines=None, w_label_step=0, h_label_step=0,  grid_step=1, titles = None, colorMap=None, Max=None, Min=None, saveto=None, colorBar=True, linesColor='red', linesWidth=1):
     """
     Displays an Image (grayscale or RGB)
     
@@ -22,10 +22,12 @@ def showImage(Images, width=10, height=10, showGrid=True, HLines=None, VLines=No
     Max          : pixel max (default to 255 or 1 depending of data)
     Min          : pixel min (default 0)
     saveto       : path to save figure
+    linesColor   : color of guidelines (default red)
+    linesWidth   : width of lines (default 1)
     
     Returns:
     --------
-    figure, ax (matplotlib)
+        figure, ax (matplotlib)
     """
     maxPixelsPerWidthUnitMajor = 2.5
     maxPixelsPerWidthUnitMinor = 10
@@ -140,16 +142,16 @@ def showImage(Images, width=10, height=10, showGrid=True, HLines=None, VLines=No
 
         if(not HLines is None):
             if(np.isscalar(HLines)):
-                ax.axhline(HLines, color='red', linewidth=2);
+                ax.axhline(HLines, color=linesColor, linewidth=linesWidth);
             else:            
                 for H in HLines:
-                    ax.axhline(H, color='red', linewidth=2);
+                    ax.axhline(H, color=linesColor, linewidth=linesWidth);
         if(not VLines is None):
             if(np.isscalar(VLines)):
-                ax.axvline(VLines, color='red', linewidth=2);
+                ax.axvline(VLines, color=linesColor, linewidth=linesWidth);
             else:            
                 for V in VLines:
-                    ax.axvline(V, color='red', linewidth=2);
+                    ax.axvline(V, color=linesColor, linewidth=linesWidth);
         i += 1
         
     if(not saveto is None):
@@ -182,12 +184,14 @@ def find_nearest(array, value, last=False):
         idx = (np.abs(array - value)).argmin()
     return idx, array[idx]
 
-def showHistogram(f):
+def showHistogram(f, color='RoyalBlue', saveto=None):
     """
     Displays histograms and its cumulative for an image f
     Parameters:
     -----------
         f : image
+        color : line color (default RoyalBlue)
+        saveto : save path (default None)
     
     Returns:
     --------
@@ -196,24 +200,28 @@ def showHistogram(f):
     """
     
     
-    info = np.iinfo(f.dtype)
-    inMin = info.min
-    inMax = info.max
+    if('int' in str(f.dtype)):
+        info = np.iinfo(f.dtype)
+        inMin = info.min
+        inMax = info.max
+    else:
+        inMin = np.min(f)
+        inMax = np.max(f)
     
     h = computeHisto(f)
-    hX = np.arange(inMin, inMax+1)
+    hX = np.linspace(inMin, inMax, h.size)
     
     stemLimit = 20
     hc, hcn = computeCumulativeHisto(h)
     
     fig, axs = plt.subplots(1,3,figsize=(20,5))
     if(len(h) > stemLimit):
-        axs[0].plot(hX, h)
+        axs[0].plot(hX, h, c=color)
     else:
-        axs[0].stem(hX, h, use_line_collection=True)
+        axs[0].stem(hX, h, use_line_collection=True, c=color)
     axs[0].grid()
-    axs[1].plot(hX, hc)
-    axs[2].plot(hX, hcn)
+    axs[1].plot(hX, hc, c=color)
+    axs[2].plot(hX, hcn, c=color)
     axs[1].grid()
     axs[2].grid()
     axs[1].set_xlim(inMin,inMax)
@@ -225,6 +233,9 @@ def showHistogram(f):
     axs[2].set_title('Histogramme cumulé normalisé')
     [ax.grid() for ax in axs];
     
+    if(not saveto is None):
+            fig.savefig(saveto);
+            
     return fig, axs
 
 def computeHisto(f):
@@ -237,10 +248,22 @@ def computeHisto(f):
     --------
         h : histogram
     """
-    info = np.iinfo(f.dtype)
-    N = info.max - info.min + 1
+    
+    if('int' in str(f.dtype)):
+        info = np.iinfo(f.dtype)
+        inMax = info.max
+        inMin = info.min
+    else:
+        inMin = int(np.floor(np.min(f)))
+        inMax = int(np.ceil(np.max(f)))
+        
+    if('float' in str(f.dtype)):
+        N = 256
+        rng = np.linspace(inMin, inMax, N)
+    else:
+        N = inMax - inMin + 1
+        rng = np.arange(inMin, inMax+1)
     h = np.zeros(N, dtype=int)
-    rng = np.arange(info.min, info.max+1)
     for i in range(0, N):
         h[i] = np.sum(f == rng[i])
     return h
@@ -269,12 +292,9 @@ def imgLevelAdjust(f, _mini=1, _maxi=99, outDType='uint8'):
     hc[0] = 0
     minIndex, _ = find_nearest(hc, _mini*255/100, last=True)
     maxIndex, _ = find_nearest(hc, _maxi*255/100, last=False)
-    print(minIndex)
-    print(maxIndex)
     lut = np.zeros(inMax-inMin, dtype='uint8')
     lut[minIndex:maxIndex] = outMax/(maxIndex-minIndex) * np.arange(maxIndex-minIndex)
     lut[maxIndex:] = outMax
-    print(lut)
     
     return applyLUT(f, lut).astype(outDType)
     
@@ -370,9 +390,8 @@ def halfToning(img):
 
 
 #
-# PADDINGS
+# Labo04 - Part 1
 #
-
 def circularPadding(f,m):
     """
     Adds circular-type padding to an image so that mask can be applied
@@ -462,19 +481,19 @@ def replicatePadding(f,m):
     h = f.shape[0]
     w = f.shape[1]
     
-    fp = np.zeros((h+2*b, w+2*a))
+    fp = np.zeros((h+2*b, w+2*a),dtype=f.dtype)
     #     [C11 lt C12]
     #fp = [cl  f  cr]
     #     [C21 lb C22]
-    C11 = np.ones((b,a)) * f[0,0]
-    C12 = np.ones((b,a)) * f[0,-1]
-    C21 = np.ones((b,a)) * f[-1,0]
-    C22 = np.ones((b,a)) * f[-1,-1]
+    C11 = np.ones((b,a),dtype=f.dtype) * f[0,0]
+    C12 = np.ones((b,a),dtype=f.dtype) * f[0,-1]
+    C21 = np.ones((b,a),dtype=f.dtype) * f[-1,0]
+    C22 = np.ones((b,a),dtype=f.dtype) * f[-1,-1]
     
-    lt = np.ones((b,w))  * f[0,:]
-    lb = np.ones((b,w))  * f[-1,:]
-    cl = np.ones((h, a)) * np.transpose([f[:,0]])
-    cr = np.ones((h, a)) * np.transpose([f[:,-1]])
+    lt = np.ones((b,w),dtype=f.dtype)  * f[0,:]
+    lb = np.ones((b,w),dtype=f.dtype)  * f[-1,:]
+    cl = np.ones((h, a),dtype=f.dtype) * np.transpose([f[:,0]])
+    cr = np.ones((h, a),dtype=f.dtype) * np.transpose([f[:,-1]])
     
     A = np.concatenate([C11, lt, C12], axis=1)
     B = np.concatenate([cl, f, cr], axis=1)
@@ -500,14 +519,14 @@ def zeroPadding(f,m):
     h = f.shape[0]
     w = f.shape[1]
     
-    fp = np.zeros((h+2*b, w+2*a))
+    fp = np.zeros((h+2*b, w+2*a),dtype=f.dtype)
     #     [C  UD C]
     #fp = [LR f  LR]
     #     [C  lb C]
-    C = np.zeros((b,a))
+    C = np.zeros((b,a),dtype=f.dtype)
     
-    UD = np.zeros((b,w))
-    LR = np.zeros((h,a))
+    UD = np.zeros((b,w),dtype=f.dtype)
+    LR = np.zeros((h,a),dtype=f.dtype)
     A = np.concatenate([C, UD, C], axis=1)
     B = np.concatenate([LR, f, LR], axis=1)
     fp = np.concatenate([A,B,A], axis=0)
@@ -550,3 +569,40 @@ def imageUnpadding(f,mask):
     print(g)
     return g
 
+#
+# Labo04 - Part 2
+#
+def conv2D(_f,_mask, norm=True):
+    """
+    2D convolution of an image
+    
+    Parameters:
+    -----------
+        _f    : input image
+        _mask : mask
+        norm  : normalize image 0-255 (default true)
+    Returns:
+    --------
+        g     : new image
+    """        
+    a = _mask.shape[1]//2
+    b = _mask.shape[0]//2
+    
+    height = _f.shape[0]
+    width = _f.shape[1]
+    lines = np.arange(height)
+    columns = np.arange(width)
+    
+    f = imagePadding(_f, _mask, 'zero')
+    g = np.zeros_like(_f, 'int16')
+    
+    for l in lines:
+        for c in columns:
+            hm = f[l:l+2*b+1, c:c+2*a+1].astype('int16')
+            v = np.sum(hm * _mask).astype('int16')
+            #print(v)
+            g[l,c] = v
+    if(norm):
+        g = TIS.imgLevelAdjust(g, 0, 100, outDType='uint8')
+    
+    return g
