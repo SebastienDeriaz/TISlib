@@ -1,7 +1,12 @@
 import matplotlib.pyplot as plt
 import numpy as np
 import skimage as sk
+from skimage.filters import threshold_otsu
 from skimage import morphology
+import scipy.stats as st
+
+
+
 
 def showImage(Images, width=10, height=10, showGrid=True, HLines=None, VLines=None, w_label_step=0, h_label_step=0,  grid_step=1, titles = None, colorMap=None, Max=None, Min=None, saveto=None, colorBar=False, linesColor='red', linesWidth=1):
     """
@@ -364,7 +369,7 @@ def halfToning(img):
     else:
         image = img
     
-    threshold = filters.threshold_otsu(image)
+    threshold = threshold_otsu(image)
     
     height = image.shape[0]
     width = image.shape[1]
